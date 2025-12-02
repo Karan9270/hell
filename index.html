@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Rain</title>
+    <style>
+        /* Basic setup for the body and canvas */
+        body {
+            margin: 0;
+            overflow: hidden; /* Hide scrollbars */
+            background-color: black;
+        }
+
+        /* The canvas is where the effect is drawn */
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set the canvas size to cover the entire viewport
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+
+        // Characters used for the 'digital rain' effect (using numbers)
+        const characters = '0123456789'; 
+
+        // Font size for the characters
+        const fontSize = 16;
+        
+        // Calculate the number of columns based on canvas width and font size
+        const columns = Math.floor(canvas.width / fontSize);
+
+        // An array to keep track of the Y coordinate for each column
+        // Initialize all drops to start at the top (Y = 0)
+        const drops = [];
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        // The drawing function
+        function draw() {
+            // 1. Create a transparent black rectangle over the entire canvas.
+            // This is the key to the 'fading' trail effect.
+            // The alpha value (0.05) makes the previous frame slowly fade out.
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Set the text color to bright green
+            ctx.fillStyle = '#0F0'; 
+            ctx.font = `${fontSize}px monospace`;
+
+            // 3. Loop through each column (each 'drop')
+            for (let i = 0; i < drops.length; i++) {
+                // Pick a random character (number)
+                const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                
+                // Calculate the X and Y position for the text
+                const x = i * fontSize;
+                const y = drops[i] * fontSize;
+
+                // Draw the character
+                ctx.fillText(text, x, y);
+
+                // Check if the drop has reached the bottom of the screen
+                // If the Y position is greater than a random threshold (0.97) OR if it's hit the bottom
+                // reset it to the top (Y = 0)
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0; // Reset to the top
+                }
+
+                // Increment the drop's Y position to make it move down
+                drops[i]++;
+            }
+        }
+
+        // Function to handle window resizing
+        function handleResize() {
+            canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth;
+            // Recalculate columns and reset drops array
+            const newColumns = Math.floor(canvas.width / fontSize);
+            drops.length = newColumns;
+            for (let i = 0; i < newColumns; i++) {
+                if (drops[i] === undefined) {
+                    drops[i] = 1;
+                }
+            }
+        }
+        
+        // Listen for window resize events
+        window.addEventListener('resize', handleResize);
+
+        // Use the built-in animation loop for smooth, continuous drawing
+        // The draw function will be called repeatedly (typically 60 times per second)
+        setInterval(draw, 33); // A delay of 33ms gives about 30 frames per second
+    </script>
+</body>
+</html>
